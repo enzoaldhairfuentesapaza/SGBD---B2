@@ -3,7 +3,7 @@ from query.console import run_console
 if __name__ == "__main__":
     run_console()
 
-
+#HGASFSDAFSD
 '''from disk_manager.physical_disk import PhysicalDisk
 from disk_manager.physical_adapter import PhysicalDiskAdapter
 from disk_manager.disk_manager import DiskManager
