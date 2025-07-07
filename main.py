@@ -1,7 +1,13 @@
 from query.console import run_console
+from query.console import run_console
+import tkinter as tk
+from tkinter import messagebox
+import os
+from interface.configurador_disco import lanzar_interfaz
 
+DISCO_PATH = "disco_general.bin"
 if __name__ == "__main__":
-    run_console()
+    lanzar_interfaz()
 
 #HGASFSDAFSD
 '''from disk_manager.physical_disk import PhysicalDisk
