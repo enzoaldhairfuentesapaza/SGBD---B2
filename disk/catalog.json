@@ -1,0 +1,20 @@
+{
+  "estudiantes": {
+    "primary_key": "id",
+    "columns": [
+      {
+        "name": "id",
+        "type": "int"
+      },
+      {
+        "name": "nombre",
+        "type": "str"
+      },
+      {
+        "name": "edad",
+        "type": "int"
+      }
+    ],
+    "root_page": null
+  }
+}

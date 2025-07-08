@@ -1,7 +1,7 @@
 import os
 import json
-from config import DATA_DIR
 
+DATA_DIR = "data"  # ✅ Eliminado el import desde config.py, ahora usa este valor por defecto
 CATALOG_FILE = os.path.join(DATA_DIR, "catalog.json")
 
 class CatalogManager:

@@ -1,13 +1,12 @@
 import struct
 import pickle
-
 from disk_manager.disk_manager import DiskManager
-from config import PAGE_SIZE, ORDER
 
 class BPlusTree:
-    def __init__(self, disk_manager, table_name, root_page=None):
+    def __init__(self, disk_manager, table_name, root_page=None, order=4):  # ✅ Modificado: order como parámetro
         self.disk = disk_manager
         self.table_name = table_name
+        self.order = order  # ✅ Guardar el order en la instancia
         
         if root_page is None:
             self.root_page = self.disk.allocate_page()
@@ -27,28 +26,23 @@ class BPlusTree:
     def search(self, key):
         node = self._read_node(self.root_page)
 
-        # Descenso por nodos internos
         while not node["is_leaf"]:
             i = 0
             while i < len(node["keys"]) and key >= node["keys"][i]:
                 i += 1
             node = self._read_node(node["children"][i])
 
-        # Búsqueda dentro del nodo hoja
         for i, k in enumerate(node["keys"]):
             if k == key:
-                return node["values"][i]  #  Correcto: solo deserializa una vez
+                return node["values"][i]
 
-        return None  # No se encontró
+        return None
 
     def _create_leaf_node(self):
         return {
             "is_leaf": True,
             "keys": [],
-            "values": 
-            [
-
-            ],
+            "values": [],
             "next": None
         }
 
@@ -60,7 +54,7 @@ class BPlusTree:
         }
 
     def _write_node(self, page_id, node):
-        data = bytearray(PAGE_SIZE)
+        data = bytearray(self.disk.adapter.page_size)  # ✅ Modificado: ya no usa PAGE_SIZE
         offset = 0
 
         data[offset] = 1 if node["is_leaf"] else 0
@@ -74,10 +68,10 @@ class BPlusTree:
 
         if node["is_leaf"]:
             for val in node["values"]:
-                val_size = len(val)  # porque val ya es bytes
+                val_size = len(val)
                 data[offset:offset+4] = struct.pack("i", val_size)
                 offset += 4
-                data[offset:offset+val_size] = val  # ← val ya es pickle.dumps(...)
+                data[offset:offset+val_size] = val
                 offset += val_size
             data[offset:offset+4] = struct.pack("i", node["next"] if node["next"] is not None else -1)
         else:
@@ -136,7 +130,7 @@ class BPlusTree:
             node["keys"].insert(i, key)
             node["values"].insert(i, pickle.dumps(value))
 
-            if len(node["keys"]) > ORDER:
+            if len(node["keys"]) > self.order:  # ✅ Modificado: usa self.order
                 return self._split_leaf(node, page_id)
             else:
                 self._write_node(page_id, node)
@@ -156,7 +150,7 @@ class BPlusTree:
             node["children"][i] = left_page
             node["children"].insert(i+1, right_page)
 
-            if len(node["keys"]) > ORDER:
+            if len(node["keys"]) > self.order:  # ✅ Modificado: usa self.order
                 return self._split_internal(node, page_id)
             else:
                 self._write_node(page_id, node)
