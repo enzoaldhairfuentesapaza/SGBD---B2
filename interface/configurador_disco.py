@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import os
-from page_manager.catalog import CATALOG_FILE  # Asegúrate que sea el correcto
+from page_manager.catalog import CATALOG_FILE  
 from page_manager.table_manager import TableManager
 from disk_manager.physical_disk import PhysicalDisk
 from disk_manager.physical_adapter import PhysicalDiskAdapter
@@ -83,7 +83,7 @@ class InterfazPrincipal:
         if os.path.exists(DISK_FILE):
             # Si el disco ya existe, no se vuelve a crear ni se calculan tamaños
             self.resultado_label.config(
-                text="ℹ️ El disco ya ha sido creado previamente.", fg="#FFA500"
+                text="El disco ya ha sido creado previamente.", fg="#FFA500"
             )
             messagebox.showinfo("Disco existente", "El disco ya ha sido creado.")
             return
@@ -117,13 +117,13 @@ class InterfazPrincipal:
             os.remove(DISK_FILE)
             mensajes.append("✅ Disco eliminado.")
         else:
-            mensajes.append("⚠️ No se encontró el archivo del disco.")
+            mensajes.append(" No se encontró el archivo del disco.")
 
         if os.path.exists(CATALOG_FILE):
             os.remove(CATALOG_FILE)
             mensajes.append("✅ Catálogo eliminado.")
         else:
-            mensajes.append("⚠️ No se encontró el archivo de catálogo.")
+            mensajes.append(" No se encontró el archivo de catálogo.")
 
         messagebox.showinfo("Eliminación", "\n".join(mensajes))
 

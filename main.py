@@ -8,6 +8,7 @@ from interface.configurador_disco import lanzar_interfaz
 DISCO_PATH = "disco_general.bin"
 if __name__ == "__main__":
     lanzar_interfaz()
+    run_console()
 
 #HGASFSDAFSD
 '''from disk_manager.physical_disk import PhysicalDisk
