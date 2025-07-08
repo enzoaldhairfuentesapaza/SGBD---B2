@@ -5,7 +5,19 @@ from data_structure.bplustree import BPlusTree
 from disk_manager.physical_disk import PhysicalDisk
 from disk_manager.physical_adapter import PhysicalDiskAdapter
 from disk_manager.disk_manager import DiskManager
-from config import PLATOS, PISTAS, SECTORES_POR_PISTA, BYTES_POR_SECTOR
+
+META_FILE = "disco_general.meta"  # ⚠️ NUEVO: archivo de metadatos
+
+# ⚠️ NUEVO: Función para cargar los parámetros reales del disco
+def cargar_metadatos_disco(meta_file=META_FILE):
+    if not os.path.exists(meta_file):
+        raise Exception("Archivo de metadatos no encontrado. ¿Ya creaste el disco?")
+    with open(meta_file, "r") as f:
+        platos = int(f.readline())
+        pistas = int(f.readline())
+        sectores = int(f.readline())
+        bytes_sector = int(f.readline())
+    return platos, pistas, sectores, bytes_sector
 
 class TableManager:
     def __init__(self):
@@ -17,15 +29,21 @@ class TableManager:
             self.disk = None
             return
 
-        self.disk = PhysicalDisk(
-            "disco_general.bin",
-            platos=PLATOS,
-            pistas=PISTAS,
-            sectores_por_pista=SECTORES_POR_PISTA,
-            bytes_por_sector=BYTES_POR_SECTOR
-        )
-        self.adapter = PhysicalDiskAdapter(self.disk)
-        self.disk_manager = DiskManager(self.adapter)
+        try:
+            # ⚠️ NUEVO: ahora carga los parámetros desde los metadatos
+            platos, pistas, sectores, bytes_sector = cargar_metadatos_disco()
+            self.disk = PhysicalDisk(
+                "disco_general.bin",
+                platos=platos,
+                pistas=pistas,
+                sectores_por_pista=sectores,
+                bytes_por_sector=bytes_sector
+            )
+            self.adapter = PhysicalDiskAdapter(self.disk)
+            self.disk_manager = DiskManager(self.adapter)
+        except Exception as e:
+            print(f"ERROR >:c >> {e}")
+            self.disk = None
 
     def _get_tree(self, table_name):
         if table_name not in self.trees:
@@ -92,3 +110,10 @@ class TableManager:
 
     def list_tables(self):
         return self.catalog.list_tables() if self.disk else []
+    
+    def search_by_field(self, table_name, field, value):
+        records = self.select_all(table_name)
+        matched_records = [
+            record for record in records if str(record.get(field)) == str(value)
+        ]
+        return matched_records

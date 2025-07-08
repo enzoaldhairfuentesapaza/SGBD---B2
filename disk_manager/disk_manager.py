@@ -1,5 +1,4 @@
 from disk_manager.physical_adapter import PhysicalDiskAdapter
-
 class DiskManager:
     def __init__(self, adapter):  # Ahora recibe el adaptador
         self.adapter = adapter

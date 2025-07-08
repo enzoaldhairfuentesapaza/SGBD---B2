@@ -6,8 +6,9 @@ from page_manager.table_manager import TableManager
 from disk_manager.physical_disk import PhysicalDisk
 from disk_manager.physical_adapter import PhysicalDiskAdapter
 from disk_manager.disk_manager import DiskManager
-from config import DISK_FILE
 
+DISK_FILE = "disco_general.bin"  #  Añadido aquí, eliminando dependencia de config.py
+META_FILE = "disco_general.meta"  # Archivo para guardar metadatos del disco
 
 class InterfazPrincipal:
     def __init__(self, root):
@@ -75,13 +76,11 @@ class InterfazPrincipal:
                               bg="#f0ad4e", fg="white", width=15, command=self.volver)
         atras_btn.grid(row=0, column=1, padx=20)
 
-        # Mensaje de resultado
         self.resultado_label = tk.Label(self.configurador, text="", font=("Helvetica", 14), bg="white")
         self.resultado_label.pack(pady=10)
 
     def crear_disco(self):
         if os.path.exists(DISK_FILE):
-            # Si el disco ya existe, no se vuelve a crear ni se calculan tamaños
             self.resultado_label.config(
                 text="El disco ya ha sido creado previamente.", fg="#FFA500"
             )
@@ -94,12 +93,16 @@ class InterfazPrincipal:
             sectores = int(self.entries[2].get())
             bytes_sector = int(self.entries[3].get())
 
-            # Crear disco físicamente
             disco = PhysicalDisk(DISK_FILE, platos, pistas, sectores, bytes_sector)
             adapter = PhysicalDiskAdapter(disco)
             self.disk_manager = DiskManager(adapter)
 
-            # Calcular tamaño del disco
+            with open(META_FILE, "w") as f:
+                f.write(f"{platos}\n")
+                f.write(f"{pistas}\n")
+                f.write(f"{sectores}\n")
+                f.write(f"{bytes_sector}\n")
+
             total_bytes = platos * pistas * sectores * bytes_sector
             self.resultado_label.config(
                 text=f"✅ Disco creado. Tamaño total: {total_bytes:,} bytes", fg="#2E8B57"
@@ -107,9 +110,8 @@ class InterfazPrincipal:
 
         except Exception as e:
             self.resultado_label.config(
-                text=f"❌ Error al crear el disco: {str(e)}", fg="red"
+                text=f"X Error al crear el disco: {str(e)}", fg="red"
             )
-
 
     def eliminar_disco(self):
         mensajes = []
@@ -124,6 +126,12 @@ class InterfazPrincipal:
             mensajes.append("✅ Catálogo eliminado.")
         else:
             mensajes.append(" No se encontró el archivo de catálogo.")
+
+        if os.path.exists(META_FILE):
+            os.remove(META_FILE)
+            mensajes.append("✅ Metadatos eliminados.")
+        else:
+            mensajes.append(" No se encontró el archivo de metadatos.")
 
         messagebox.showinfo("Eliminación", "\n".join(mensajes))
 

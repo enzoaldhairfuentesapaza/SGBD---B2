@@ -1,1 +1,24 @@
+<<<<<<< HEAD
 {}
+=======
+{
+  "estudiantes": {
+    "primary_key": "id",
+    "columns": [
+      {
+        "name": "id",
+        "type": "int"
+      },
+      {
+        "name": "nombre",
+        "type": "str"
+      },
+      {
+        "name": "edad",
+        "type": "int"
+      }
+    ],
+    "root_page": null
+  }
+}
+>>>>>>> be81578cbc37b7d34ca4f29fb1006d5d9984acfa

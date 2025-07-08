@@ -18,7 +18,7 @@ def run_console():
             elif cmd.lower().startswith("insert into"):
                 parse_insert(cmd)
             elif cmd.lower().startswith("select from"):
-                parse_select(cmd)
+                parse_select_any(cmd)
 #SELECT *
             else:
                 print("Comando no reconocido.")
@@ -100,3 +100,31 @@ def parse_select(cmd):
         print("Resultado:", record)
     else:
         print("No encontrado.")
+
+def parse_select_any(cmd):
+    print("Comando recibido:", cmd)  # Debug temporal
+
+    pattern = r'select\s+from\s+(\w+)\s+where\s+(\w+)\s*=\s*(?:"([^"]+)"|\'([^\']+)\'|([^\s;]+));?'
+    match = re.match(pattern, cmd, re.IGNORECASE)
+    if not match:
+        raise Exception("Sintaxis inválida para SELECT.")
+
+    table_name = match.group(1)
+    field = match.group(2)
+    value = match.group(3) or match.group(4) or match.group(5)
+
+    schema = manager.catalog.get_table_schema(table_name)
+    if not schema:
+        raise Exception("Tabla no encontrada.")
+
+    columns = [col["name"] for col in schema["columns"]]
+    if field not in columns:
+        raise Exception(f"Columna '{field}' no existe en la tabla '{table_name}'.")
+
+    results = manager.search_by_field(table_name, field, value)
+    if results:
+        print("Resultados encontrados:")
+        for record in results:
+            print(record)
+    else:
+        print("No se encontraron registros.")
