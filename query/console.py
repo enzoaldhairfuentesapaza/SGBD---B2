@@ -17,19 +17,16 @@ def run_console():
                 parse_create(cmd)
             elif cmd.lower().startswith("insert into"):
                 parse_insert(cmd)
+            elif cmd.lower().startswith("select * from"):
+                parse_select_all(cmd)  # Detecta SELECT * FROM primero
             elif cmd.lower().startswith("select from"):
                 parse_select_any(cmd)
-#SELECT *
             else:
                 print("Comando no reconocido.")
         except Exception as e:
             print(f"Error: {e}")
 
 def parse_create(cmd):
-    # CREATE TABLE clientes (id int, nombre str, edad int) PRIMARY KEY id;
-
-    # CREATE TABLE PRODUCTO (index INTEGER(10) PRIMARY KEY,item VARCHAR(40) NOT NULL,cost DECIMAL(10, 2) NOT NULL,tax DECIMAL(10, 2) NOT NULL,total DECIMAL(10, 2) NOT NULL); 
-    
     pattern = r"create table (\w+)\s*\((.*?)\)\s*primary key (\w+);?"
     match = re.match(pattern, cmd, re.IGNORECASE)
     if not match:
@@ -48,7 +45,6 @@ def parse_create(cmd):
     print(f"Tabla '{table_name}' creada.")
 
 def parse_insert(cmd):
-    # INSERT INTO clientes VALUES (1, "Enzo", 20);
     pattern = r"insert into (\w+)\s*values\s*\((.*?)\);?"
     match = re.match(pattern, cmd, re.IGNORECASE)
     if not match:
@@ -71,39 +67,7 @@ def parse_insert(cmd):
     manager.insert(table_name, record)
     print("Registro insertado.")
 
-#SELECT FROM *, que imprima todos los registros
-
-
-def parse_select(cmd):
-    # SELECT FROM clientes WHERE id = 1;
-    pattern = r"select from (\w+)\s+where\s+(\w+)\s*=\s*(\d+);?"
-    match = re.match(pattern, cmd, re.IGNORECASE)
-    if not match:
-        raise Exception("Sintaxis inválida para SELECT.")
-
-    table_name, field, value = match.groups()
-    schema = manager.catalog.get_table_schema(table_name)
-    if not schema:
-        raise Exception("Tabla no encontrada.")
-
-    if field != schema["primary_key"]:
-        raise Exception("Solo puedes buscar por la clave primaria.")
-
-    record = manager.select(table_name, int(value))
-    
-    '''print()
-    print(record)
-    print(type(record))
-    print()'''
-    
-    if record:
-        print("Resultado:", record)
-    else:
-        print("No encontrado.")
-
 def parse_select_any(cmd):
-    print("Comando recibido:", cmd)  # Debug temporal
-
     pattern = r'select\s+from\s+(\w+)\s+where\s+(\w+)\s*=\s*(?:"([^"]+)"|\'([^\']+)\'|([^\s;]+));?'
     match = re.match(pattern, cmd, re.IGNORECASE)
     if not match:
@@ -128,3 +92,23 @@ def parse_select_any(cmd):
             print(record)
     else:
         print("No se encontraron registros.")
+
+# ✅ NUEVA FUNCIÓN → SELECT * FROM
+def parse_select_all(cmd):
+    pattern = r"select\s+\*\s+from\s+(\w+);?"
+    match = re.match(pattern, cmd, re.IGNORECASE)
+    if not match:
+        raise Exception("Sintaxis inválida para SELECT *.")
+
+    table_name = match.group(1)
+    schema = manager.catalog.get_table_schema(table_name)
+    if not schema:
+        raise Exception("Tabla no encontrada.")
+
+    records = manager.select_all(table_name)
+    if records:
+        print(f"Todos los registros en '{table_name}':")
+        for record in records:
+            print(record)
+    else:
+        print(f"No hay registros en la tabla '{table_name}'.")
