@@ -75,6 +75,9 @@ class TableManager:
         tree = self._get_tree(table_name)
         if tree:
             tree.insert(key, record)
+            # ⚠️ ¡GUARDAR la raíz actualizada después de insertar!
+            self.catalog.catalog[table_name]["root_page"] = tree.root_page
+            self.catalog.save()  # Guarda el catálogo
 
     def select(self, table_name, key):
         if self.disk is None:
